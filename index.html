@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenge Media – Challenge Everything</title>
+    <meta name="description" content="Challenge Media - Challenge Everything. Ideas. Perceptions. Challenge Yourself.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: #000000;
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            font-size: clamp(18px, 3.5vw, 28px);
+            display: flex;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        #container {
+            text-align: left;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .line {
+            margin-bottom: 0.5em;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        #current-line {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        #current-line::after {
+            content: '|';
+            animation: blink 0.7s infinite;
+        }
+
+        #current-line.hide-cursor::after {
+            display: none;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        a {
+            color: #fff;
+            text-decoration: none;
+            transition: opacity 0.2s ease;
+            cursor: pointer;
+        }
+
+        a:hover {
+            opacity: 0.7;
+        }
+
+        #email-link {
+            display: none;
+            margin-top: 0.5em;
+        }
+
+        #email-link.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="completed-lines"></div>
+        <div id="current-line"></div>
+        <a id="email-link" href="mailto:info@challenge.media">info@challenge.media</a>
+    </div>
+
+    <script>
+        const completedLines = document.getElementById('completed-lines');
+        const currentLine = document.getElementById('current-line');
+        const emailLink = document.getElementById('email-link');
+
+        // action: "type-delete" = type, pause, delete, stay on same line
+        // action: "type-next" = type, pause, move to next line
+        // action: "show-email" = show the email link
+        const sequence = [
+            { text: "Hello.", action: "type-delete", pauseAfter: 1400 },
+            { text: "Welcome to Challenge Media.", action: "type-next", pauseAfter: 2000 },
+            { text: "You may have seen our work.", action: "type-next", pauseAfter: 2000 },
+            { text: "We hope you liked it...", action: "type-next", pauseAfter: 2200 },
+            { text: "Our philosophy is simple.", action: "type-delete", pauseAfter: 1600 },
+            { text: "Challenge Everything.", action: "type-delete", pauseAfter: 1400 },
+            { text: "Ideas.", action: "type-delete", pauseAfter: 1200 },
+            { text: "Perceptions.", action: "type-delete", pauseAfter: 1200 },
+            { text: "Challenge Yourself.", action: "type-next", pauseAfter: 1800 },
+            { text: "", action: "blank-line", pauseAfter: 800 },
+            { text: "To see how we can help you or your organization...", action: "type-next", pauseAfter: 2200 },
+            { text: "...send us a message.", action: "type-next", pauseAfter: 2000 },
+            { text: "", action: "show-email", pauseAfter: 0 }
+        ];
+
+        const typeSpeed = 70;
+        const deleteSpeed = 40;
+
+        async function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function typeText(text) {
+            for (let i = 0; i <= text.length; i++) {
+                currentLine.textContent = text.substring(0, i);
+                await sleep(typeSpeed);
+            }
+        }
+
+        async function deleteText() {
+            const text = currentLine.textContent;
+            for (let i = text.length; i >= 0; i--) {
+                currentLine.textContent = text.substring(0, i);
+                await sleep(deleteSpeed);
+            }
+        }
+
+        function addCompletedLine(text) {
+            const line = document.createElement('div');
+            line.className = 'line';
+            line.textContent = text;
+            completedLines.appendChild(line);
+            currentLine.textContent = '';
+        }
+
+        async function runSequence() {
+            for (const item of sequence) {
+                if (item.action === "show-email") {
+                    currentLine.classList.add('hide-cursor');
+                    emailLink.classList.add('visible');
+                    break;
+                }
+
+                await typeText(item.text);
+                await sleep(item.pauseAfter);
+
+                if (item.action === "type-delete") {
+                    await deleteText();
+                    await sleep(300);
+                } else if (item.action === "type-next") {
+                    addCompletedLine(item.text);
+                } else if (item.action === "blank-line") {
+                    addCompletedLine("");
+                }
+            }
+        }
+
+        runSequence();
+    </script>
+</body>
+</html>
